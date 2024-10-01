@@ -31,11 +31,16 @@ export class MySqlService {
       await this.pool.execute(sql);
    }
 
+   async findUser(email: string) {
+      const sql = `SELECT * FROM users WHERE email = '${email}';`;
+      const [user] = await this.pool.execute(sql);
+      return user;
+   }
+
    // query 실행하는 method
    async query(sql: string, params: any[] = []) {
       // MySQL 쿼리 실행하고 결과 반환
       const [rows] = await this.pool.execute(sql, params);
-      console.log(rows);
       return rows;
    }
 }
