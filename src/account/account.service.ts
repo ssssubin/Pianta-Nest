@@ -13,12 +13,9 @@ export class AccountService {
          const hashPassword = await bcrypt.hash(userData.password, 10);
          const address = userData.postNumber + " " + userData.address + " " + userData.detailAddress;
          const params = [userData.email, userData.name, hashPassword, address, userData.phoneNumber];
-         const foundEmail = await this.mysqlService.findUser(userData.email);
 
          // 가입된 이메일이 존재하는 경우
-         if (foundEmail[0] !== undefined) {
-            throw new BadRequestException("이미 존재하는 이메일입니다.");
-         }
+         await this.checkEmail(userData.email);
 
          // 비밀번호 일치 여부
          if (userData.password !== userData.confirmPassword) {
@@ -41,6 +38,19 @@ export class AccountService {
                address: [userData.postNumber, userData.address, userData.detailAddress],
             },
          };
+      } catch (e) {
+         throw e;
+      }
+   }
+
+   async checkEmail(email: string) {
+      try {
+         const foundEmail = await this.mysqlService.findUser(email);
+         if (foundEmail[0] !== undefined) {
+            throw new BadRequestException("이미 존재하는 이메일입니다.");
+         }
+
+         return { err: null, data: email };
       } catch (e) {
          throw e;
       }

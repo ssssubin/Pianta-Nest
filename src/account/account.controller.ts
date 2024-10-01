@@ -10,4 +10,9 @@ export class AccountController {
    async signUp(@Body() userData: createUserDto) {
       return await this.accountService.createUser(userData);
    }
+
+   @Post("sign-up/check-email")
+   async checkEmail(@Body() userEmail) {
+      return await this.accountService.checkEmail(userEmail.email);
+   }
 }
