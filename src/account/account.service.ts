@@ -4,7 +4,8 @@ import { MySqlService } from "src/my-sql/my-sql.service";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { signInUserDto } from "src/account/dto/sign-in-user.dto";
-import { ConfigService } from "@nestjs/config";
+import { signInGuestDto } from "./dto/sign-in-guest.dto";
+import { Request, Response } from "express";
 
 @Injectable()
 export class AccountService {
@@ -77,6 +78,48 @@ export class AccountService {
          });
 
          return { jwtToken, isAdmin: foundUser[0].is_admin };
+      } catch (e) {
+         throw e;
+      }
+   }
+
+   async guestSignIn(guestData: signInGuestDto): Promise<{ jwtToken: string }> {
+      try {
+         const sql = `SELECT * FROM guests WHERE order_number = ?;`;
+         const params = [guestData.orderNumber];
+         const foundGuest = await this.mysqlService.query(sql, params);
+         const isPassword = await bcrypt.compare(guestData.password, foundGuest[0].password);
+         if (foundGuest[0] === undefined || isPassword === false) {
+            throw new BadRequestException("주문번호나 비밀번호가 일치하지 않습니다.");
+         }
+
+         const jwtToken = await this.jwtService.signAsync({
+            email: foundGuest[0].email,
+            phone_number: foundGuest[0].phone_number,
+         });
+         return { jwtToken };
+      } catch (e) {
+         throw e;
+      }
+   }
+
+   async signOut(req: Request, res: Response) {
+      try {
+         const { userCookies, guestCookies, adminCookies } = req.cookies;
+         if (userCookies) {
+            res.clearCookie(userCookies);
+            return;
+         }
+
+         if (guestCookies) {
+            res.clearCookie(guestCookies);
+            return;
+         }
+
+         if (adminCookies) {
+            res.clearCookie(guestCookies);
+            return;
+         }
       } catch (e) {
          throw e;
       }
