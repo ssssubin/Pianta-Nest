@@ -20,6 +20,6 @@ export class AppModule implements OnModuleInit {
    constructor(private readonly mysqlService: MySqlService) {}
    async onModuleInit() {
       // 서버 시작 시 테이블 생성
-      await this.mysqlService.createUserTable();
+      await Promise.all([this.mysqlService.createUserTable(), this.mysqlService.createGuestTabe()]);
    }
 }
