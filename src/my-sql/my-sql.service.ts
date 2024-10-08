@@ -6,7 +6,7 @@ export class MySqlService {
    private pool: mysql.Pool;
 
    constructor() {
-      // db 연결 설정임
+      // db 연결 설정
       this.pool = mysql.createPool({
          host: "127.0.0.1",
          port: 3306,
@@ -31,6 +31,19 @@ export class MySqlService {
       await this.pool.execute(sql);
    }
 
+   // guest 테이블 생성
+   async createGuestTabe() {
+      const sql = `CREATE TABLE IF NOT EXISTS guests(
+         order_number VARCHAR(10) PRIMARY KEY,
+         email VARCHAR(255) NOT NULL,
+         name VARCHAR(255) NOT NULL,
+         password VARCHAR(255) NOT NULL,
+         phone_number VARCHAR(20) NOT NULL
+         )`;
+      await this.pool.execute(sql);
+   }
+
+   // 회원 찾는 method
    async findUser(email: string) {
       const sql = `SELECT * FROM users WHERE email = '${email}';`;
       const [user] = await this.pool.execute(sql);
