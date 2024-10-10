@@ -34,6 +34,6 @@ export class createUserDto {
    @IsMobilePhone("ko-KR", {}, { message: "올바르지 않은 전화번호입니다." })
    readonly phoneNumber: string;
 
-   @IsBoolean()
+   @IsBoolean({ message: "이용 약관에 동의가 필요합니다." })
    readonly agreement: boolean;
 }
