@@ -107,17 +107,17 @@ export class AccountService {
       try {
          const { userCookies, guestCookies, adminCookies } = req.cookies;
          if (userCookies) {
-            res.clearCookie(userCookies);
+            res.clearCookie("userCookies");
             return;
          }
 
          if (guestCookies) {
-            res.clearCookie(guestCookies);
+            res.clearCookie("guestCookies");
             return;
          }
 
          if (adminCookies) {
-            res.clearCookie(guestCookies);
+            res.clearCookie("adminCookies");
             return;
          }
       } catch (e) {
