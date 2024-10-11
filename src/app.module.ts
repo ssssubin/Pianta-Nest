@@ -19,6 +19,7 @@ import { MyPageModule } from "./my-page/my-page.module";
          useFactory: async () => ({
             secret: process.env.USER_JWT_SECRET_KEY,
             signOptions: { expiresIn: "1h" },
+            global: true,
          }),
       }),
       MyPageModule,
@@ -33,6 +34,6 @@ export class AppModule implements OnModuleInit, NestModule {
       await Promise.all([this.mysqlService.createUserTable(), this.mysqlService.createGuestTabe()]);
    }
    configure(consumer: MiddlewareConsumer) {
-      consumer.apply(IsAuthenticatedMiddleware).forRoutes("my-page");
+      consumer.apply(IsAuthenticatedMiddleware).forRoutes("my-page", "check-password");
    }
 }
