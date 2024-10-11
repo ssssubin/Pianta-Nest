@@ -41,6 +41,11 @@ export class AccountController {
       return { err: null, message: "인증 성공하였습니다." };
    }
 
+   @Post("check-password")
+   async checkPassword(@Res({ passthrough: true }) res: Response, @Body() password: { password: string }) {
+      return await this.accountService.checkPassword(res, password.password);
+   }
+
    // 로그아웃
    @Post("sign-out")
    async signOut(@Req() req: Request, @Res({ passthrough: true }) res: Response) {

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { createUserDto } from "src/account/dto/create-user.dto";
 import { MySqlService } from "src/my-sql/my-sql.service";
 import * as bcrypt from "bcrypt";
@@ -72,10 +72,13 @@ export class AccountService {
             throw new BadRequestException("이메일이나 비밀번호가 일치하지 않습니다.");
          }
 
-         const jwtToken = await this.jwtService.signAsync({
-            email: foundUser[0].email,
-            phoneNumber: foundUser[0].phone_number,
-         });
+         const jwtToken = await this.jwtService.signAsync(
+            {
+               email: foundUser[0].email,
+               phoneNumber: foundUser[0].phone_number,
+            },
+            { secret: process.env.USER_JWT_SECRET_KEY },
+         );
 
          return { jwtToken, isAdmin: foundUser[0].is_admin };
       } catch (e) {
@@ -93,11 +96,36 @@ export class AccountService {
             throw new BadRequestException("주문번호나 비밀번호가 일치하지 않습니다.");
          }
 
-         const jwtToken = await this.jwtService.signAsync({
-            email: foundGuest[0].email,
-            phone_number: foundGuest[0].phone_number,
-         });
+         const jwtToken = await this.jwtService.signAsync(
+            {
+               email: foundGuest[0].email,
+               phone_number: foundGuest[0].phone_number,
+            },
+            { secret: process.env.GUEST_JWT_SECRET_KEY },
+         );
          return { jwtToken };
+      } catch (e) {
+         throw e;
+      }
+   }
+
+   async checkPassword(res: Response, password: string) {
+      try {
+         const foundUser = await this.mysqlService.findUser(res.locals.user.email);
+         if (foundUser[0] === undefined) {
+            throw new NotFoundException("사용자를 찾을 수 없습니다.");
+         }
+
+         const isPasswordCorrect = await bcrypt.compare(password, foundUser[0].password);
+         if (isPasswordCorrect === false) {
+            throw new UnauthorizedException("비밀번호가 일치하지 않습니다. 비밀번호를 다시 입력해주세요.");
+         }
+
+         // update_lock -> fasle로 변경
+         const sql = `UPDATE users SET update_lock = ?`;
+         const params = [false];
+         await this.mysqlService.query(sql, params);
+         return { err: null, data: { message: "비밀번호 재확인 완료되었습니다." } };
       } catch (e) {
          throw e;
       }
