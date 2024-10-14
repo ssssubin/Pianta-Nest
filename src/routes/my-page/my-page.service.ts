@@ -13,13 +13,6 @@ export class MyPageService {
    // 마이페이지 조회
    async getMyPage(req: Request, res: Response) {
       try {
-         const { adminCookies } = req.cookies;
-
-         // 관리자인 경우
-         if (adminCookies) {
-            throw new ForbiddenException("접근 권한이 없습니다.");
-         }
-
          const foundUser = await this.mysqlService.findUser(res.locals.user.email);
 
          if (foundUser[0] === undefined) {
