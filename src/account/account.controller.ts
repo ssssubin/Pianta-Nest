@@ -24,21 +24,13 @@ export class AccountController {
    // 회원 로그인
    @Post("sign-in")
    async signIn(@Res({ passthrough: true }) res: Response, @Body() userData: signInUserDto) {
-      const { jwtToken, isAdmin } = await this.accountService.signIn(userData);
-      if (isAdmin) {
-         res.cookie("adminCookies", jwtToken, { httpOnly: true });
-         return { err: null, data: { isAdmin: true, message: "로그인에 성공하셨습니다. 환영합니다." } };
-      }
-      res.cookie("userCookies", jwtToken, { httpOnly: true });
-      return { err: null, data: { isAdmin: false, message: "로그인에 성공하셨습니다. 환영합니다." } };
+      return await this.accountService.signIn(res, userData);
    }
 
    // 비회원 로그인
    @Post("guest/sign-in")
    async guestSignIn(@Res({ passthrough: true }) res: Response, @Body() guestData: signInGuestDto) {
-      const { jwtToken } = await this.accountService.guestSignIn(guestData);
-      res.cookie("guestCookies", jwtToken, { httpOnly: true });
-      return { err: null, message: "인증 성공하였습니다." };
+      return await this.accountService.guestSignIn(res, guestData);
    }
 
    @Post("check-password")
@@ -49,7 +41,6 @@ export class AccountController {
    // 로그아웃
    @Post("sign-out")
    async signOut(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-      await this.accountService.signOut(req, res);
-      return { err: null, data: "성공적으로 로그아웃 되었습니다." };
+      return await this.accountService.signOut(req, res);
    }
 }

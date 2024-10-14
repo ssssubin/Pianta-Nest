@@ -63,12 +63,12 @@ export class AccountService {
       }
    }
 
-   async signIn(userData: signInUserDto): Promise<{ jwtToken: string; isAdmin: boolean }> {
+   async signIn(res: Response, userData: signInUserDto) {
       try {
          const foundUser = await this.mysqlService.findUser(userData.email);
          const isPassword = await bcrypt.compare(userData.password, foundUser[0].password);
          // 이메일 불일치 or 패스워드 불일치 or 탈퇴한 회원인 경우
-         if (foundUser[0] === undefined || isPassword === false || foundUser[0].isUser === false) {
+         if (foundUser[0] === undefined || isPassword === false || foundUser[0].is_user === 0) {
             throw new BadRequestException("이메일이나 비밀번호가 일치하지 않습니다.");
          }
 
@@ -80,13 +80,20 @@ export class AccountService {
             { secret: process.env.USER_JWT_SECRET_KEY },
          );
 
-         return { jwtToken, isAdmin: foundUser[0].is_admin };
+         // 관리자인 경우
+         if (foundUser[0].is_admin) {
+            res.cookie("adminCookies", jwtToken, { httpOnly: true });
+            return { err: null, data: { isAdmin: true, message: "로그인에 성공하셨습니다. 환영합니다." } };
+         }
+         // 유저인 경우
+         res.cookie("userCookies", jwtToken, { httpOnly: true });
+         return { err: null, data: { isAdmin: false, message: "로그인에 성공하셨습니다. 환영합니다." } };
       } catch (e) {
          throw e;
       }
    }
 
-   async guestSignIn(guestData: signInGuestDto): Promise<{ jwtToken: string }> {
+   async guestSignIn(res: Response, guestData: signInGuestDto) {
       try {
          const sql = `SELECT * FROM guests WHERE order_number = ?;`;
          const params = [guestData.orderNumber];
@@ -103,7 +110,8 @@ export class AccountService {
             },
             { secret: process.env.GUEST_JWT_SECRET_KEY },
          );
-         return { jwtToken };
+         res.cookie("guestCookies", jwtToken, { httpOnly: true });
+         return { err: null, message: "인증 성공하였습니다." };
       } catch (e) {
          throw e;
       }
@@ -136,17 +144,17 @@ export class AccountService {
          const { userCookies, guestCookies, adminCookies } = req.cookies;
          if (userCookies) {
             res.clearCookie("userCookies");
-            return;
+            return { err: null, data: "성공적으로 로그아웃 되었습니다." };
          }
 
          if (guestCookies) {
             res.clearCookie("guestCookies");
-            return;
+            return { err: null, data: "성공적으로 로그아웃 되었습니다." };
          }
 
          if (adminCookies) {
             res.clearCookie("adminCookies");
-            return;
+            return { err: null, data: "성공적으로 로그아웃 되었습니다." };
          }
       } catch (e) {
          throw e;
