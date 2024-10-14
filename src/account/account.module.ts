@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AccountService } from "./account.service";
 import { AccountController } from "./account.controller";
-import { MySqlService } from "src/my-sql/my-sql.service";
+import { MySqlService } from "src/data/my-sql/my-sql.service";
 import { JwtModule } from "@nestjs/jwt";
 
 @Module({
