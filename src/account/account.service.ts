@@ -111,7 +111,7 @@ export class AccountService {
             { secret: process.env.GUEST_JWT_SECRET_KEY },
          );
          res.status(200).cookie("guestCookies", jwtToken, { httpOnly: true });
-         return { err: null, message: "인증 성공하였습니다." };
+         return { err: null, message: "로그인에 성공하셨습니다. 환영합니다." };
       } catch (e) {
          throw e;
       }
@@ -126,7 +126,7 @@ export class AccountService {
 
          const isPasswordCorrect = await bcrypt.compare(password, foundUser[0].password);
          if (isPasswordCorrect === false) {
-            throw new UnauthorizedException("비밀번호가 일치하지 않습니다. 비밀번호를 다시 입력해주세요.");
+            throw new BadRequestException("비밀번호가 일치하지 않습니다. 비밀번호를 다시 입력해주세요.");
          }
 
          // update_lock -> fasle로 변경
