@@ -32,7 +32,7 @@ export class MySqlService {
    }
 
    // guest 테이블 생성
-   async createGuestTabe() {
+   async createGuestTable() {
       const sql = `CREATE TABLE IF NOT EXISTS guests(
          order_number VARCHAR(10) PRIMARY KEY,
          email VARCHAR(255) NOT NULL,
@@ -40,6 +40,15 @@ export class MySqlService {
          password VARCHAR(255) NOT NULL,
          phone_number VARCHAR(20) NOT NULL
          )`;
+      await this.pool.execute(sql);
+   }
+
+   // 대분류 카테고리 테이블 생성
+   async createCategoryTable() {
+      const sql = `CREATE TABLE IF NOT EXISTS categories(
+         number INT(1) PRIMARY KEY,
+         name VARCHAR(30) NOT NULL
+      )`;
       await this.pool.execute(sql);
    }
 
