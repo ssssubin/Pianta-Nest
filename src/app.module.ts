@@ -41,7 +41,7 @@ export class AppModule implements OnModuleInit, NestModule {
       ]);
    }
    configure(consumer: MiddlewareConsumer) {
-      consumer.apply(IsAuthenticatedMiddleware).forRoutes("my-page", "check-password");
+      consumer.apply(IsAuthenticatedMiddleware).forRoutes("my-page", "check-password", "sign-out");
       consumer.apply(IsAuthenticatedAdminMiddleware).forRoutes("admin");
    }
 }
