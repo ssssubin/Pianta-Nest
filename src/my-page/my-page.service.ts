@@ -78,8 +78,9 @@ export class MyPageService {
             { secret: process.env.USER_JWT_SECRET_KEY },
          );
 
+         res.cookie("userCookies", newJwtToken, { httpOnly: true });
          return {
-            newJwtToken,
+            err: null,
             data: {
                email: updateData.email,
                name: updateData.name,
@@ -87,6 +88,24 @@ export class MyPageService {
                phoneNumber: updateData.phoneNumber,
             },
          };
+      } catch (e) {
+         throw e;
+      }
+   }
+
+   // 회원 탈퇴
+   async withdrawalUser(res: Response) {
+      try {
+         const foundUser = await this.mysqlService.findUser(res.locals.user.email);
+         if (foundUser === undefined) {
+            throw new NotFoundException("유저를 찾을 수 없습니다.");
+         }
+
+         const sql = `UPDATE users SET is_user = ? WHERE email = ?`;
+         const params = [false, foundUser[0].email];
+         await this.mysqlService.query(sql, params);
+         res.clearCookie("userCookies");
+         return { err: null, data: { message: "탈퇴되었습니다." } };
       } catch (e) {
          throw e;
       }

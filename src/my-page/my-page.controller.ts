@@ -6,15 +6,19 @@ import { signInUserDto } from "src/account/dto/sign-in-user.dto";
 @Controller("my-page")
 export class MyPageController {
    constructor(private mypageService: MyPageService) {}
-   @Get() // 마이페이지 조회
+   // 마이페이지 조회
+   @Get()
    async getMyPage(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
       return await this.mypageService.getMyPage(req, res);
    }
-
-   @Put() // 마이페이지 수정
+   // 마이페이지 수정
+   @Put()
    async updateMyPage(@Res({ passthrough: true }) res: Response, @Body() updateData: signInUserDto) {
-      const { newJwtToken, data } = await this.mypageService.updateMyPage(res, updateData);
-      res.cookie("userCookies", newJwtToken, { httpOnly: true });
-      return { err: null, data };
+      return await this.mypageService.updateMyPage(res, updateData);
+   }
+   // 회원 탈퇴
+   @Put("/withdrawal")
+   async withdrawal(@Res({ passthrough: true }) res: Response) {
+      return await this.mypageService.withdrawalUser(res);
    }
 }
