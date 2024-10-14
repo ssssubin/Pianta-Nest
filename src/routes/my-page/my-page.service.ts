@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException, PreconditionFailedException } from "@nestjs/common";
 import { Request, Response } from "express";
-import { MySqlService } from "src/my-sql/my-sql.service";
+import { MySqlService } from "src/data/my-sql/my-sql.service";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { signInUserDto } from "src/account/dto/sign-in-user.dto";
