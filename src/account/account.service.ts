@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { createUserDto } from "src/account/dto/create-user.dto";
-import { MySqlService } from "src/my-sql/my-sql.service";
+import { MySqlService } from "src/data/my-sql/my-sql.service";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { signInUserDto } from "src/account/dto/sign-in-user.dto";
@@ -82,11 +82,11 @@ export class AccountService {
 
          // 관리자인 경우
          if (foundUser[0].is_admin) {
-            res.cookie("adminCookies", jwtToken, { httpOnly: true });
+            res.status(200).cookie("adminCookies", jwtToken, { httpOnly: true });
             return { err: null, data: { isAdmin: true, message: "로그인에 성공하셨습니다. 환영합니다." } };
          }
          // 유저인 경우
-         res.cookie("userCookies", jwtToken, { httpOnly: true });
+         res.status(200).cookie("userCookies", jwtToken, { httpOnly: true });
          return { err: null, data: { isAdmin: false, message: "로그인에 성공하셨습니다. 환영합니다." } };
       } catch (e) {
          throw e;
@@ -110,7 +110,7 @@ export class AccountService {
             },
             { secret: process.env.GUEST_JWT_SECRET_KEY },
          );
-         res.cookie("guestCookies", jwtToken, { httpOnly: true });
+         res.status(200).cookie("guestCookies", jwtToken, { httpOnly: true });
          return { err: null, message: "인증 성공하였습니다." };
       } catch (e) {
          throw e;
@@ -133,6 +133,7 @@ export class AccountService {
          const sql = `UPDATE users SET update_lock = ?`;
          const params = [false];
          await this.mysqlService.query(sql, params);
+         res.statusCode = 200;
          return { err: null, data: { message: "비밀번호 재확인 완료되었습니다." } };
       } catch (e) {
          throw e;
@@ -143,17 +144,17 @@ export class AccountService {
       try {
          const { userCookies, guestCookies, adminCookies } = req.cookies;
          if (userCookies) {
-            res.clearCookie("userCookies");
+            res.status(200).clearCookie("userCookies");
             return { err: null, data: "성공적으로 로그아웃 되었습니다." };
          }
 
          if (guestCookies) {
-            res.clearCookie("guestCookies");
+            res.status(200).clearCookie("guestCookies");
             return { err: null, data: "성공적으로 로그아웃 되었습니다." };
          }
 
          if (adminCookies) {
-            res.clearCookie("adminCookies");
+            res.status(200).clearCookie("adminCookies");
             return { err: null, data: "성공적으로 로그아웃 되었습니다." };
          }
       } catch (e) {
