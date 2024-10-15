@@ -143,6 +143,11 @@ export class AccountService {
    async signOut(req: Request, res: Response) {
       try {
          const { userCookies, guestCookies, adminCookies } = req.cookies;
+         // 쿠키가 없을 경우(= 로그인한 사용자가 없는 경우)
+         if (!(userCookies || guestCookies || adminCookies)) {
+            throw new UnauthorizedException("로그인된 사용자가 아닙니다.");
+         }
+
          if (userCookies) {
             res.status(200).clearCookie("userCookies");
             return { err: null, data: "성공적으로 로그아웃 되었습니다." };
