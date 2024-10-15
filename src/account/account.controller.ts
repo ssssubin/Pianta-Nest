@@ -117,7 +117,12 @@ export class AccountController {
    @ApiTags("마이페이지 API")
    @Post("check-password")
    @ApiOperation({ summary: "비밀번호 재확인 API" })
-   @ApiResponse({ status: 200, description: "비밀번호 재확인 성공", schema: { example: { password: "string" } } })
+   @ApiBody({ schema: { example: { password: "string" } } })
+   @ApiResponse({
+      status: 200,
+      description: "비밀번호 재확인 성공",
+      example: { err: null, data: { message: "비밀번호 재확인 완료되었습니다." } },
+   })
    @ApiBadRequestResponse({
       description: "Bad Request",
       example: {
@@ -140,6 +145,8 @@ export class AccountController {
    }
 
    // 로그아웃
+   @ApiCookieAuth("guestCookies")
+   @ApiCookieAuth("adminCookies")
    @ApiCookieAuth("userCookies")
    @Post("sign-out")
    @ApiOperation({ summary: "로그아웃 API" })
@@ -151,7 +158,7 @@ export class AccountController {
    @ApiUnauthorizedResponse({
       description: "UnAuthorized",
       example: {
-         err: "토큰이 만료되었습니다. 다시 로그인해주세요. | 유효하지 않거나 손상된 토큰입니다. 다시 로그인해주세요.",
+         err: "토큰이 만료되었습니다. 다시 로그인해주세요. | 유효하지 않거나 손상된 토큰입니다. 다시 로그인해주세요. | 로그인된 사용자가 아닙니다.",
          data: null,
       },
    })
