@@ -13,6 +13,8 @@ async function bootstrap() {
       .setDescription("식물 판매 사이트 API 문서")
       .setVersion("1.0.0")
       .addCookieAuth("userCookies")
+      .addCookieAuth("adminCookies")
+      .addCookieAuth("guestCookies")
       .build();
    const document = SwaggerModule.createDocument(app, config);
    SwaggerModule.setup("api-docs", app, document);
