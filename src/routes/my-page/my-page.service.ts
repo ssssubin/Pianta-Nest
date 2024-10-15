@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException, PreconditionFailedException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, PreconditionFailedException } from "@nestjs/common";
 import { Request, Response } from "express";
 import { MySqlService } from "src/data/my-sql/my-sql.service";
 import * as bcrypt from "bcrypt";
@@ -11,7 +11,7 @@ export class MyPageService {
       private jwtService: JwtService,
    ) {}
    // 마이페이지 조회
-   async getMyPage(req: Request, res: Response) {
+   async getMyPage(res: Response) {
       try {
          const foundUser = await this.mysqlService.findUser(res.locals.user.email);
 
@@ -40,6 +40,11 @@ export class MyPageService {
          // 유저가 존재하지 않는 경우
          if (foundUser[0] === undefined) {
             throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
+         }
+
+         // 비밀번호가 일치하지 않는 경우
+         if (updateData.password !== updateData.confirmPassword) {
+            throw new BadRequestException("비밀번호가 일치하지 않습니다.");
          }
 
          // 비밀번호 재확인 안 했을 경우
