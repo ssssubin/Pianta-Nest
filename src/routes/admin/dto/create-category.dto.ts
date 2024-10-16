@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsInt, IsString, Max, Min } from "class-validator";
+import { IsInt, IsNotEmpty, IsString, Max, Min } from "class-validator";
 
 export class createCategoryDto {
    @ApiProperty({ description: "대분류 카테고리 번호" })
@@ -9,6 +9,7 @@ export class createCategoryDto {
    readonly number: number;
 
    @ApiProperty({ description: "대분류 카테고리 이름" })
+   @IsNotEmpty({ message: "대분류 카테고리명은 빈 값이 아니어야 합니다." })
    @IsString({ message: "대분류 카테고리 이름은 문자열이어야 합니다." })
    readonly name: string;
 }
