@@ -83,6 +83,7 @@ export class AdminCategoryController {
 
    // 대분류 카테고리 삭제
    @Delete(":categoryNumber")
+   @ApiOperation({ summary: "대분류 카테고리 삭제 API" })
    @ApiNoContentResponse({ description: "대분류 카테고리 삭제" })
    @ApiUnauthorizedResponse({
       description: "UnAuthorized",
