@@ -47,7 +47,20 @@ export class MySqlService {
    async createCategoryTable() {
       const sql = `CREATE TABLE IF NOT EXISTS categories(
          number INT(1) PRIMARY KEY,
-         name VARCHAR(30) NOT NULL
+         name VARCHAR(30) NOT NULL,
+         UNIQUE KEY unque_name(name)
+      )`;
+      await this.pool.execute(sql);
+   }
+
+   // 소분류 카테고리 테이블 생성
+   async createSubCategoryTable() {
+      const sql = `CREATE TABLE IF NOT EXISTS subCategories(
+         number INT(3) PRIMARY KEY,
+         name VARCHAR(30) NOT NULL,
+         main_category_number INT(1) NOT NULL,
+         FOREIGN KEY (main_category_number) REFERENCES categories (number),
+         UNIQUE KEY unque_name(name)
       )`;
       await this.pool.execute(sql);
    }
