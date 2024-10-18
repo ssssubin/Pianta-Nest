@@ -1,8 +1,8 @@
 import { Body, Controller, Post, Req, Res } from "@nestjs/common";
-import { createUserDto } from "src/account/dto/create-user.dto";
+import { createUserDto } from "./dto/create-user.dto";
 import { AccountService } from "./account.service";
 import { Request, Response } from "express";
-import { signInUserDto } from "src/account/dto/sign-in-user.dto";
+import { signInUserDto } from "./dto/sign-in-user.dto";
 import { signInGuestDto } from "./dto/sign-in-guest.dto";
 import {
    ApiBadRequestResponse,
@@ -18,12 +18,12 @@ import {
    ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
 
-@ApiTags("회원가입/로그인")
 @Controller()
 export class AccountController {
    constructor(private readonly accountService: AccountService) {}
 
    // 회원가입
+   @ApiTags("회원가입/로그인")
    @Post("sign-up")
    @ApiOperation({ summary: "회원가입 API" })
    @ApiCreatedResponse({
@@ -51,6 +51,7 @@ export class AccountController {
    }
 
    // 이메일 중복 체크
+   @ApiTags("회원가입/로그인")
    @Post("sign-up/check-email")
    @ApiOperation({ summary: "이메일 중복 체크 API" })
    @ApiBody({ schema: { example: { email: "string" } } })
@@ -72,6 +73,7 @@ export class AccountController {
    }
 
    // 회원 로그인
+   @ApiTags("회원가입/로그인")
    @Post("sign-in")
    @ApiOperation({ summary: "회원 로그인 API" })
    @ApiBody({ schema: { example: { email: "string", password: "string" } } })
@@ -93,6 +95,7 @@ export class AccountController {
    }
 
    // 비회원 로그인
+   @ApiTags("회원가입/로그인")
    @Post("guest/sign-in")
    @ApiOperation({ summary: "비회원 API" })
    @ApiBody({ schema: { example: { orderNumber: "number", password: "string" } } })
@@ -114,8 +117,8 @@ export class AccountController {
    }
 
    @ApiCookieAuth("userCookies")
-   @ApiTags("마이페이지 API")
    @Post("check-password")
+   @ApiTags("마이페이지 API")
    @ApiOperation({ summary: "비밀번호 재확인 API" })
    @ApiBody({ schema: { example: { password: "string" } } })
    @ApiResponse({
@@ -145,6 +148,7 @@ export class AccountController {
    }
 
    // 로그아웃
+   @ApiTags("회원가입/로그인")
    @ApiCookieAuth("guestCookies")
    @ApiCookieAuth("adminCookies")
    @ApiCookieAuth("userCookies")

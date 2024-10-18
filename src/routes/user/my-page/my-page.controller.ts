@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Put, Req, Res } from "@nestjs/common";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { MyPageService } from "./my-page.service";
-import { signInUserDto } from "src/account/dto/sign-in-user.dto";
+import { signInUserDto } from "src/routes/user/account/dto/sign-in-user.dto";
 import {
    ApiBadRequestResponse,
    ApiBody,
