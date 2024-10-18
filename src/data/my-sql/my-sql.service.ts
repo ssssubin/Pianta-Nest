@@ -59,7 +59,7 @@ export class MySqlService {
          number INT(3) PRIMARY KEY,
          name VARCHAR(30) NOT NULL,
          main_category_number INT(1) NOT NULL,
-         FOREIGN KEY (main_category_number) REFERENCES categories (number),
+         FOREIGN KEY (main_category_number) REFERENCES categories (number) ON DELETE CASCADE,
          UNIQUE KEY unque_name(name)
       )`;
       await this.pool.execute(sql);
