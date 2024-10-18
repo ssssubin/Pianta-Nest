@@ -19,7 +19,7 @@ import { updateCategoryDto } from "../dto/update-category.dto";
 import { Response } from "express";
 @ApiCookieAuth("adminCookies")
 @ApiTags("카테고리 API")
-@Controller("admin/category")
+@Controller("admin/categories")
 export class AdminCategoryController {
    constructor(private adminCategoryService: AdminCategoryService) {}
    // 대분류 카테고리 생성
