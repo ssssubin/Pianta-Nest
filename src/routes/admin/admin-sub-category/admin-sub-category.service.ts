@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { MySqlService } from "src/data/my-sql/my-sql.service";
 import { createSubCategoryDto } from "../dto/create-sub-category.dto";
 import { updateSubCategoryDto } from "../dto/update-sub-category.dto";
+import { Response } from "express";
 
 @Injectable()
 export class AdminSubCategoryService {
@@ -69,6 +70,26 @@ export class AdminSubCategoryService {
          const updateParams = [subCategoryName.name, subCategory];
          await this.mySqlService.query(updateSql, updateParams);
          return { err: null, data: { subCategoryName: subCategoryName.name } };
+      } catch (e) {
+         throw e;
+      }
+   }
+
+   async deleteCategory(subCategory: number, res: Response) {
+      try {
+         const foundSubCategorySql = `SELECT COUNT(*) as count FROM subcategories WHERE number = ?`;
+         const params = [subCategory];
+         const foundSubCategory = await this.mySqlService.query(foundSubCategorySql, params);
+         // 소분류 카테고리 db 존재 여부
+         if (foundSubCategory[0].count === 0) {
+            throw new NotFoundException("존재하지 않는 소분류 카테고리입니다.");
+         }
+
+         const deleteSubCategorySql = `DELETE FROM subcategories WHERE number = ?`;
+         await this.mySqlService.query(deleteSubCategorySql, params);
+
+         res.statusCode = 204;
+         return;
       } catch (e) {
          throw e;
       }
