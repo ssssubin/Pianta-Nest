@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, Post, Put } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, Res } from "@nestjs/common";
 import {
    ApiBadRequestResponse,
    ApiCookieAuth,
    ApiCreatedResponse,
    ApiForbiddenResponse,
    ApiInternalServerErrorResponse,
+   ApiNoContentResponse,
    ApiNotFoundResponse,
    ApiOkResponse,
    ApiOperation,
@@ -13,6 +14,7 @@ import {
 } from "@nestjs/swagger";
 import { AdminProductService } from "./admin-product.service";
 import { createProductDto } from "../dto/create-product.dto";
+import { Response } from "express";
 
 @ApiTags("상품 API")
 @ApiCookieAuth("adminCookies")
@@ -128,7 +130,25 @@ export class AdminProductController {
    @ApiForbiddenResponse({ description: "Forbidden", example: { err: "관리자가 아닙니다.", data: null } })
    @ApiNotFoundResponse({ description: "Not Found", example: { err: "존재하지 않는 상품입니다.", data: null } })
    @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
-   async updateProduct(@Param("productNumber") product: number, @Body() updateData: createProductDto) {
+   async updateProduct(@Param("productNumber") product: bigint, @Body() updateData: createProductDto) {
       return await this.productService.updateProduct(product, updateData);
+   }
+
+   // 상품 삭제
+   @ApiOperation({ summary: "상품 삭제 API" })
+   @Delete(":productNumber")
+   @ApiNoContentResponse({ description: "상품 삭제" })
+   @ApiUnauthorizedResponse({
+      description: "UnAuthorized",
+      example: {
+         err: "토큰이 만료되었습니다. 다시 로그인해주세요. | 유효하지 않거나 손상된 토큰입니다. 다시 로그인해주세요.",
+         data: null,
+      },
+   })
+   @ApiForbiddenResponse({ description: "Forbidden", example: { err: "관리자가 아닙니다.", data: null } })
+   @ApiNotFoundResponse({ description: "Not Found", example: { err: "존재하지 않는 상품입니다.", data: null } })
+   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   async deleteProduct(@Res({ passthrough: true }) res: Response, @Param("productNumber") product: bigint) {
+      return await this.productService.deleteProduct(res, product);
    }
 }

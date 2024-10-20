@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { customAlphabet } from "nanoid";
 import { MySqlService } from "src/data/my-sql/my-sql.service";
 import { createProductDto } from "../dto/create-product.dto";
+import { Response } from "express";
 
 @Injectable()
 export class AdminProductService {
@@ -81,54 +82,77 @@ export class AdminProductService {
       }
    }
 
-   async updateProduct(product: number, updateData: createProductDto) {
-      const foundProductSql = `SELECT COUNT(*) as count FROM products WHERE number = ?`;
-      const foundProductParams = [product];
-      const foundProduct = await this.mysqlService.query(foundProductSql, foundProductParams);
-      if (foundProduct[0].count === 0) {
-         throw new NotFoundException("존재하지 않는 상품입니다.");
+   async updateProduct(product: bigint, updateData: createProductDto) {
+      try {
+         const foundProductSql = `SELECT COUNT(*) as count FROM products WHERE number = ?`;
+         const foundProductParams = [product];
+         const foundProduct = await this.mysqlService.query(foundProductSql, foundProductParams);
+         if (foundProduct[0].count === 0) {
+            throw new NotFoundException("존재하지 않는 상품입니다.");
+         }
+
+         const foundCategorySql = `SELECT COUNT(*) as count FROM categories WHERE name = ?`;
+         const foundCategoryParams = [updateData.categoryName];
+         const foundCategory = await this.mysqlService.query(foundCategorySql, foundCategoryParams);
+
+         if (foundCategory[0].count === 0) {
+            throw new BadRequestException("존재하지 않는 대분류 카테고리입니다.");
+         }
+
+         const foundSubCategorySql = `SELECT number, main_category_number FROM subcategories WHERE name = ?`;
+         const foundSubCategoryParams = [updateData.subCategoryName];
+         const foundSubCategory = await this.mysqlService.query(foundSubCategorySql, foundSubCategoryParams);
+
+         if (foundSubCategory[0] === undefined) {
+            throw new BadRequestException("존재하지 않는 소분류 카테고리입니다.");
+         }
+
+         const updateSql = `UPDATE products SET name = ?, price =?, information = ?, origin = ?, category_number =?, sub_category_number =? WHERE number = ?`;
+         const updateParams = [
+            updateData.name,
+            updateData.price,
+            updateData.information,
+            updateData.origin,
+            foundSubCategory[0].main_category_number,
+            foundSubCategory[0].number,
+            product,
+         ];
+
+         await this.mysqlService.query(updateSql, updateParams);
+
+         return {
+            err: null,
+            data: {
+               number: product,
+               name: updateParams[0],
+               price: updateParams[1],
+               information: updateParams[2],
+               origin: updateParams[3],
+               categoryNumber: updateParams[4],
+               subCategoryNumber: updateParams[5],
+            },
+         };
+      } catch (e) {
+         throw e;
       }
+   }
 
-      const foundCategorySql = `SELECT COUNT(*) as count FROM categories WHERE name = ?`;
-      const foundCategoryParams = [updateData.categoryName];
-      const foundCategory = await this.mysqlService.query(foundCategorySql, foundCategoryParams);
+   async deleteProduct(res: Response, product: bigint) {
+      try {
+         const foundProductSql = `SELECT COUNT(*) as count FROM products WHERE number = ?`;
+         const foundProductParams = [product];
+         const foundProduct = await this.mysqlService.query(foundProductSql, foundProductParams);
+         if (foundProduct[0].count === 0) {
+            throw new NotFoundException("존재하지 않는 상품입니다.");
+         }
 
-      if (foundCategory[0].count === 0) {
-         throw new BadRequestException("존재하지 않는 대분류 카테고리입니다.");
+         const sql = `DELETE FROM products WHERE number = ?`;
+         await this.mysqlService.query(sql, foundProductParams);
+
+         res.statusCode = 204;
+         return;
+      } catch (e) {
+         throw e;
       }
-
-      const foundSubCategorySql = `SELECT number, main_category_number FROM subcategories WHERE name = ?`;
-      const foundSubCategoryParams = [updateData.subCategoryName];
-      const foundSubCategory = await this.mysqlService.query(foundSubCategorySql, foundSubCategoryParams);
-
-      if (foundSubCategory[0] === undefined) {
-         throw new BadRequestException("존재하지 않는 소분류 카테고리입니다.");
-      }
-
-      const updateSql = `UPDATE products SET name = ?, price =?, information = ?, origin = ?, category_number =?, sub_category_number =? WHERE number = ?`;
-      const updateParams = [
-         updateData.name,
-         updateData.price,
-         updateData.information,
-         updateData.origin,
-         foundSubCategory[0].main_category_number,
-         foundSubCategory[0].number,
-         product,
-      ];
-
-      await this.mysqlService.query(updateSql, updateParams);
-
-      return {
-         err: null,
-         data: {
-            number: product,
-            name: updateParams[0],
-            price: updateParams[1],
-            information: updateParams[2],
-            origin: updateParams[3],
-            categoryNumber: updateParams[4],
-            subCategoryNumber: updateParams[5],
-         },
-      };
    }
 }
