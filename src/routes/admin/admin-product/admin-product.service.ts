@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { customAlphabet } from "nanoid";
 import { MySqlService } from "src/data/my-sql/my-sql.service";
+import { createProductDto } from "../dto/create-product.dto";
 
 @Injectable()
 export class AdminProductService {
@@ -21,8 +22,60 @@ export class AdminProductService {
          on c.number = s.main_category_number) as category
          on p.category_number = category.categoryNumber and
          p.sub_category_number= category.subCategoryNumber`;
+
          const products = await this.mysqlService.query(sql);
+
          return { err: null, data: products };
+      } catch (e) {
+         throw e;
+      }
+   }
+
+   async createProduct(productData: createProductDto) {
+      try {
+         const foundCategorySql = `SELECT COUNT(*) as count FROM categories WHERE name = ?`;
+         const foundCategoryParams = [productData.categoryName];
+         const foundCategory = await this.mysqlService.query(foundCategorySql, foundCategoryParams);
+
+         if (foundCategory[0].count === 0) {
+            throw new BadRequestException("존재하지 않는 대분류 카테고리입니다.");
+         }
+
+         const foundSubCategorySql = `SELECT number, main_category_number FROM subcategories WHERE name = ?`;
+         const foundSubCategoryParams = [productData.subCategoryName];
+         const foundSubCategory = await this.mysqlService.query(foundSubCategorySql, foundSubCategoryParams);
+
+         if (foundSubCategory[0] === undefined) {
+            throw new BadRequestException("존재하지 않는 소분류 카테고리입니다.");
+         }
+
+         // 상품 번호 = 업로드 날짜 + 랜덤 4자리 숫자
+         const productNumber = Date.now() + this.generateNumericOrderNumber();
+         // 상품 추가
+         const sql = `INSERT INTO products VALUES (?,?,?,?,?,?,?)`;
+         const params = [
+            productNumber,
+            productData.name,
+            productData.price,
+            productData.information,
+            productData.origin,
+            foundSubCategory[0].main_category_number,
+            foundSubCategory[0].number,
+         ];
+         await this.mysqlService.query(sql, params);
+
+         return {
+            err: null,
+            data: {
+               number: params[0],
+               name: params[1],
+               price: params[2],
+               information: params[3],
+               origin: params[4],
+               categoryNumber: params[5],
+               subCategoryNumber: params[6],
+            },
+         };
       } catch (e) {
          throw e;
       }
