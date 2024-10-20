@@ -8,7 +8,7 @@ export class CategoryController {
    constructor(private categoryService: CategoryService) {}
    // 전체 카테고리 조회
    @Get()
-   @ApiOperation({ description: "전체 카테고리 조회 API" })
+   @ApiOperation({ summary: "전체 카테고리 조회 API" })
    @ApiOkResponse({
       description: "카테고리 조회",
       example: {
