@@ -14,11 +14,11 @@ export class createProductDto {
 
    @ApiProperty({ description: "상품 정보" })
    @IsString({ message: "상품 정보는 문자열이어야 합니다." })
-   readonly information?: string;
+   readonly information: string;
 
    @ApiProperty({ description: "원산지" })
    @IsString({ message: "원산지는 문자열이어야 합니다." })
-   readonly origin?: string;
+   readonly origin: string;
 
    @ApiProperty({ description: "대분류 카테고리명" })
    @IsString({ message: "대분류 카테고리명은 문자열이어야 합니다." })
