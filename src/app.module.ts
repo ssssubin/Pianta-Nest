@@ -39,6 +39,7 @@ export class AppModule implements OnModuleInit, NestModule {
          this.mysqlService.createGuestTable(),
          this.mysqlService.createCategoryTable(),
          this.mysqlService.createSubCategoryTable(),
+         this.mysqlService.createProducTable(),
       ]);
    }
    configure(consumer: MiddlewareConsumer) {

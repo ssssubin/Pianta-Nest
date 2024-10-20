@@ -65,6 +65,22 @@ export class MySqlService {
       await this.pool.execute(sql);
    }
 
+   // 상품 테이블 생성
+   async createProducTable() {
+      const sql = `CREATE TABLE IF NOT EXISTS products(
+         number BIGINT(12) PRIMARY KEY,
+         name VARCHAR(255) NOT NULL,
+         price INT(10) NOT NULL,
+         information VARCHAR(1000),
+         origin VARCHAR(50),
+         category_number INT(1) NOT NULL,
+         sub_category_number INT(3) NOT NULL,
+         FOREIGN KEY (category_number) REFERENCES categories (number),
+         FOREIGN KEY (sub_category_number) REFERENCES subcategories (number)
+      )`;
+      await this.pool.execute(sql);
+   }
+
    // 회원 찾는 method
    async findUser(email: string) {
       const sql = `SELECT * FROM users WHERE email = '${email}';`;
