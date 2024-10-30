@@ -9,10 +9,10 @@ import {
 import { ProductService } from "./product.service";
 
 @ApiTags("상품 API")
-@Controller("product")
+@Controller()
 export class ProductController {
    constructor(private productService: ProductService) {}
-   @Get(":productNumber")
+   @Get("product/:productNumber")
    @ApiOperation({ summary: "상품 상세 조회 API" })
    @ApiOkResponse({
       description: "상품 상세 조회",
@@ -35,6 +35,30 @@ export class ProductController {
       example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
    })
    async getProduct(@Param("productNumber") productNumber: number) {
-      return this.productService.getProduct(productNumber);
+      return await this.productService.getProduct(productNumber);
+   }
+
+   @Get("products/:categoryNumber")
+   @ApiOperation({ summary: "대분류 카테고리별 상품 조회 API" })
+   @ApiOkResponse({
+      description: "대분류 카테고리별 상품 조회",
+      example: {
+         err: null,
+         data: [
+            { number: 1234567890, name: "개장미", price: 5000 },
+            { number: 1234567891, name: "미스터 링컨", price: 25000 },
+         ],
+      },
+   })
+   @ApiNotFoundResponse({
+      description: "Not Found",
+      example: { err: "존재하지 않는 대분류 카테고리입니다.", data: null },
+   })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
+   async getProductByCategory(@Param("categoryNumber") category: number) {
+      return await this.productService.getProductByCategory(category);
    }
 }
