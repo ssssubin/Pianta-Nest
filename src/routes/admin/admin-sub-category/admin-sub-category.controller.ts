@@ -95,7 +95,7 @@ export class AdminSubCategoryController {
 
    // 소분류 카테고리 삭제
    @Delete(":subCategoryNumber")
-   @ApiOperation({ description: "소분류 카테고리 삭제 API" })
+   @ApiOperation({ summary: "소분류 카테고리 삭제 API" })
    @ApiNoContentResponse({ description: "소분류 카테고리 삭제" })
    @ApiUnauthorizedResponse({
       description: "UnAuthorized",
