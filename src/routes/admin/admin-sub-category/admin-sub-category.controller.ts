@@ -50,7 +50,10 @@ export class AdminSubCategoryController {
       description: "Not Found",
       example: { err: "존재하지 않는 대분류 카테고리입니다.", data: null },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async createSubCategory(@Body() subCategoryData: createSubCategoryDto) {
       return this.subCategoryService.createSubCategory(subCategoryData);
    }
@@ -79,7 +82,10 @@ export class AdminSubCategoryController {
       description: "Not Found",
       example: { err: "존재하지 않는 소분류 카테고리입니다.", data: null },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async updateSubCategory(
       @Param("subCategoryNumber") subCategory: number,
       @Body() subCategoryName: updateSubCategoryDto,
@@ -103,7 +109,10 @@ export class AdminSubCategoryController {
       description: "Not Found",
       example: { err: "존재하지 않는 소분류 카테고리입니다.", data: null },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async deleteSubCategory(@Param("subCategoryNumber") subCategory: number, @Res({ passthrough: true }) res: Response) {
       return await this.subCategoryService.deleteCategory(subCategory, res);
    }

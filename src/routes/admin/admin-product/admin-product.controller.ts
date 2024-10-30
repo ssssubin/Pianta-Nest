@@ -52,7 +52,10 @@ export class AdminProductController {
       },
    })
    @ApiForbiddenResponse({ description: "Forbidden", example: { err: "관리자가 아닙니다.", data: null } })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async getProducts() {
       return await this.productService.getProducts();
    }
@@ -90,7 +93,10 @@ export class AdminProductController {
       },
    })
    @ApiForbiddenResponse({ description: "Forbidden", example: { err: "관리자가 아닙니다.", data: null } })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async createProduct(@Body() productData: createProductDto) {
       return await this.productService.createProduct(productData);
    }
@@ -129,7 +135,10 @@ export class AdminProductController {
    })
    @ApiForbiddenResponse({ description: "Forbidden", example: { err: "관리자가 아닙니다.", data: null } })
    @ApiNotFoundResponse({ description: "Not Found", example: { err: "존재하지 않는 상품입니다.", data: null } })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async updateProduct(@Param("productNumber") product: bigint, @Body() updateData: createProductDto) {
       return await this.productService.updateProduct(product, updateData);
    }
@@ -147,7 +156,10 @@ export class AdminProductController {
    })
    @ApiForbiddenResponse({ description: "Forbidden", example: { err: "관리자가 아닙니다.", data: null } })
    @ApiNotFoundResponse({ description: "Not Found", example: { err: "존재하지 않는 상품입니다.", data: null } })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async deleteProduct(@Res({ passthrough: true }) res: Response, @Param("productNumber") product: bigint) {
       return await this.productService.deleteProduct(res, product);
    }

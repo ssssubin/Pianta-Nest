@@ -44,7 +44,10 @@ export class AdminCategoryController {
       },
    })
    @ApiForbiddenResponse({ description: "Forbidden", example: { err: "관리자가 아닙니다.", data: null } })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async createCategory(@Body() category: createCategoryDto) {
       return await this.adminCategoryService.createCategory(category);
    }
@@ -76,7 +79,10 @@ export class AdminCategoryController {
       description: "Not Found",
       example: { err: "존재하지 않는 대분류 카테고리입니다.", data: null },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async updateCategory(@Param("categoryNumber") category: number, @Body() name: updateCategoryDto) {
       return await this.adminCategoryService.updateCategory(category, name);
    }
@@ -97,7 +103,10 @@ export class AdminCategoryController {
       description: "Not Found",
       example: { err: "존재하지 않는 대분류 카테고리입니다.", data: null },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async deleteCategory(@Res({ passthrough: true }) res: Response, @Param("categoryNumber") category: number) {
       return await this.adminCategoryService.deleteCategory(res, category);
    }

@@ -55,7 +55,10 @@ export class MyPageController {
          data: null,
       },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async getMyPage(@Res({ passthrough: true }) res: Response) {
       return await this.mypageService.getMyPage(res);
    }
@@ -115,7 +118,10 @@ export class MyPageController {
       description: "Precondition Failed",
       example: { err: "비밀번호를 재확인해야 합니다.", data: null },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async updateMyPage(@Res({ passthrough: true }) res: Response, @Body() updateData: signInUserDto) {
       return await this.mypageService.updateMyPage(res, updateData);
    }
@@ -142,7 +148,10 @@ export class MyPageController {
          data: null,
       },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async withdrawal(@Res({ passthrough: true }) res: Response) {
       return await this.mypageService.withdrawalUser(res);
    }

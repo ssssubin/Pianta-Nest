@@ -45,7 +45,10 @@ export class AccountController {
          data: null,
       },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async signUp(@Body() userData: createUserDto) {
       return await this.accountService.createUser(userData);
    }
@@ -67,7 +70,10 @@ export class AccountController {
          data: null,
       },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async checkEmail(@Body() userData: signInUserDto) {
       return await this.accountService.checkEmail(userData.email);
    }
@@ -89,7 +95,10 @@ export class AccountController {
          data: null,
       },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async signIn(@Res({ passthrough: true }) res: Response, @Body() userData: signInUserDto) {
       return await this.accountService.signIn(res, userData);
    }
@@ -111,7 +120,10 @@ export class AccountController {
          data: null,
       },
    })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async guestSignIn(@Res({ passthrough: true }) res: Response, @Body() guestData: signInGuestDto) {
       return await this.accountService.guestSignIn(res, guestData);
    }
@@ -142,7 +154,10 @@ export class AccountController {
    })
    @ApiForbiddenResponse({ description: "Forbidden", example: { err: "인증되지 않은 사용자입니다.", data: null } })
    @ApiNotFoundResponse({ description: "Not Found", example: { err: "사용자를 찾을 수 없습니다.", data: null } })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async checkPassword(@Res({ passthrough: true }) res: Response, @Body() password: { password: string }) {
       return await this.accountService.checkPassword(res, password.password);
    }
@@ -167,7 +182,10 @@ export class AccountController {
       },
    })
    @ApiForbiddenResponse({ description: "Forbidden", example: { err: "인증되지 않은 사용자입니다.", data: null } })
-   @ApiInternalServerErrorResponse({ description: "Internal Server Error" })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
    async signOut(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
       return await this.accountService.signOut(req, res);
    }
