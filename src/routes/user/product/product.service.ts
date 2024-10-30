@@ -33,4 +33,27 @@ export class ProductService {
          throw e;
       }
    }
+
+   // 대분류 카테고리별 상품조회
+   async getProductByCategory(category: number) {
+      try {
+         const categorySql = `SELECT COUNT(*) as count FROM categories WHERE number = ?`;
+         const categoryParams = [category];
+         // 대분류 카테고리가 존재하지 않을 경우
+         const foundCategory = await this.mysqlService.query(categorySql, categoryParams);
+         if (foundCategory[0].count === 0) {
+            throw new NotFoundException("존재하지 않는 대분류 카테고리입니다.");
+         }
+
+         const productSql = `SELECT * FROM products WHERE category_number = ?`;
+         const foundProducts = await this.mysqlService.query(productSql, categoryParams);
+         const data = Object.values(foundProducts).map((product) => {
+            return { number: product.number, name: product.name, price: product.price };
+         });
+
+         return { err: null, data };
+      } catch (e) {
+         throw e;
+      }
+   }
 }
