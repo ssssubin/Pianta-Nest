@@ -5,10 +5,12 @@ import { JwtModule } from "@nestjs/jwt";
 import { MySqlService } from "src/data/my-sql/my-sql.service";
 import { MyPageController } from "./my-page/my-page.controller";
 import { MyPageService } from "./my-page/my-page.service";
+import { ProductController } from "./product/product.controller";
+import { ProductService } from "./product/product.service";
 
 @Module({
    imports: [JwtModule],
-   controllers: [AccountController, MyPageController],
-   providers: [AccountService, MyPageService, MySqlService],
+   controllers: [AccountController, MyPageController, ProductController],
+   providers: [AccountService, MyPageService, MySqlService, ProductService],
 })
 export class UserModule {}
