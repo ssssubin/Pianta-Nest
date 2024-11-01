@@ -61,4 +61,37 @@ export class ProductController {
    async getProductByCategory(@Param("categoryNumber") category: number) {
       return await this.productService.getProductByCategory(category);
    }
+
+   @Get("products/:categoryNumber/:subCategoryNumber")
+   @ApiOperation({ summary: "소분류 카테고리별 상품 조회 API" })
+   @ApiOkResponse({
+      description: "소분류 카테고리별 상품 조회",
+      example: {
+         err: null,
+         data: {
+            subCategoryName: "장미",
+            products: [
+               { name: "빨간 장미", price: 4000 },
+               { name: "파란 장미", price: 5000 },
+            ],
+         },
+      },
+   })
+   @ApiNotFoundResponse({
+      description: "Not Found",
+      example: {
+         err: "존재하지 않는 대분류 카테고리입니다. | 존재하지 않는 소분류 카테고리입니다. | 대분류 카테고리에 존재하지 않는 소분류 카테고리입니다.",
+         data: null,
+      },
+   })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
+   async getProductBySubCategory(
+      @Param("categoryNumber") category: number,
+      @Param("subCategoryNumber") subCategory: number,
+   ) {
+      return await this.productService.getProductBySubCategory(category, subCategory);
+   }
 }
