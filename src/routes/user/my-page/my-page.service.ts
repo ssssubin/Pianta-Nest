@@ -3,7 +3,7 @@ import { Response } from "express";
 import { MySqlService } from "src/data/my-sql/my-sql.service";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
-import { signInUserDto } from "src/routes/user/account/dto/sign-in-user.dto";
+import { signInUserDto } from "src/routes/user/dto/sign-in-user.dto";
 @Injectable()
 export class MyPageService {
    constructor(
