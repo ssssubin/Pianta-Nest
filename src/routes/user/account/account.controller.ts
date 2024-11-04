@@ -1,9 +1,9 @@
 import { Body, Controller, Post, Req, Res } from "@nestjs/common";
-import { createUserDto } from "./dto/create-user.dto";
+import { createUserDto } from "../dto/create-user.dto";
 import { AccountService } from "./account.service";
 import { Request, Response } from "express";
-import { signInUserDto } from "./dto/sign-in-user.dto";
-import { signInGuestDto } from "./dto/sign-in-guest.dto";
+import { signInUserDto } from "../dto/sign-in-user.dto";
+import { signInGuestDto } from "../dto/sign-in-guest.dto";
 import {
    ApiBadRequestResponse,
    ApiBody,
