@@ -1,19 +1,42 @@
-import { Body, Controller, Get, Res } from "@nestjs/common";
+import { Body, Controller, Post, Req, Res } from "@nestjs/common";
 import { OrderService } from "./order.service";
 import {
    ApiBadRequestResponse,
+   ApiBody,
    ApiCreatedResponse,
    ApiInternalServerErrorResponse,
    ApiOperation,
+   ApiTags,
 } from "@nestjs/swagger";
-import { guestOrderDto, userOrderDto } from "../dto/create-order.dto";
-import { Response } from "express";
+import { createGuestOrderDto, createUserOrderDto, guestOrderDto } from "../dto/create-order.dto";
+import { Request, Response } from "express";
 
+@ApiTags("주문 API")
 @Controller("orders")
 export class OrderController {
    constructor(private orderService: OrderService) {}
-   @Get()
-   @ApiOperation({ description: "주문 생성 API" })
+   @Post()
+   @ApiOperation({ summary: "주문 생성 API" })
+   @ApiBody({
+      description: "주문 정보",
+      schema: {
+         example: {
+            data: {
+               products: [{ name: "string", price: "string" }],
+               userInformation: {
+                  email: "string",
+                  name: "string",
+                  password: "string",
+                  confirmPassword: "string",
+                  postNumber: "string",
+                  address: "string",
+                  detailAddress: "string",
+                  phoneNumber: "string",
+               },
+            },
+         },
+      },
+   })
    @ApiCreatedResponse({
       description: "주문 생성",
       example: {
@@ -35,7 +58,13 @@ export class OrderController {
       description: "Internal Server Error",
       example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
    })
-   async createOrder(@Res({ passthrough: true }) res: Response, @Body() data: userOrderDto | guestOrderDto) {
-      return await this.orderService.createOrder(res, data);
+   async createOrder(
+      @Res({ passthrough: true }) res: Response,
+      @Req() req: Request,
+      @Body() data: createUserOrderDto | createGuestOrderDto,
+   ) {
+      const isUser = this.orderService.isCreatedGuestOrderDto(data.information);
+
+      return await this.orderService.createOrder(res, req, data);
    }
 }
