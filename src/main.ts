@@ -23,9 +23,9 @@ async function bootstrap() {
 
    app.useGlobalPipes(
       new ValidationPipe({
-         whitelist: true,
-         forbidNonWhitelisted: true,
-         transform: true,
+         whitelist: true, // 불필요한 속성 제거
+         forbidNonWhitelisted: true, // 정의되지 않은 속성 거부
+         transform: true, // 요청 데이터를 DTO로 변환
       }),
    );
    app.use(cookieParser());
