@@ -7,9 +7,8 @@ import {
 } from "@nestjs/common";
 import { customAlphabet } from "nanoid";
 import { MySqlService } from "src/data/my-sql/my-sql.service";
-import { createGuestOrderDto } from "../dto/create-order.dto";
+import { createGuestOrderDto, createUserOrderDto } from "../dto/create-order.dto";
 import * as bcrypt from "bcrypt";
-import { createUserDto } from "../dto/create-user.dto";
 import { orderState } from "./order-state";
 import { JwtService } from "@nestjs/jwt";
 import { Request, Response } from "express";
@@ -28,6 +27,18 @@ export class OrderService {
       return this.nanoid();
    }
 
+   // 비회원 주문 dto인지 확인
+   isCreatedGuestOrderDto(obj: any) {
+      if (obj.password === undefined) return;
+
+      const payload = {
+         password: obj.password,
+         confirmPassword: obj.confirmPassword,
+      };
+      return payload;
+   }
+
+   // 토큰 확인
    async verifyToken(res: Response, token, secretKey: string) {
       try {
          return this.jwtService.verify(token, { secret: secretKey });
@@ -45,22 +56,25 @@ export class OrderService {
       }
    }
 
-   async createOrder(res: Response, req: Request, data: createUserDto | createGuestOrderDto) {
+   // 주문 생성 api
+   async createOrder(res: Response, req: Request, data: createUserOrderDto | createGuestOrderDto) {
       try {
          const { userCookies, adminCookies } = req.cookies;
-
          // 관리자인 경우
          if (adminCookies) {
             throw new ForbiddenException("접근 권한이 없습니다.");
          }
 
+         const payload = this.isCreatedGuestOrderDto(data.information);
+
          // 비회원 정보일 경우
-         if (data instanceof createGuestOrderDto) {
-            const { email, name, password, confirmPassword, postNumber, address, detailAddress, phoneNumber } =
-               data.guestInformation;
-            const guestSql = `SELECT COUNT(*) as count FROM guest WHERE email = ?`;
+         if (payload !== undefined) {
+            const { email, name, postNumber, address, detailAddress, phoneNumber } = data.information;
+            const { password, confirmPassword } = payload;
+            const guestSql = `SELECT COUNT(*) as count FROM guests WHERE email = ?`;
             const guestParams = [email];
-            const foundEmail = this.mysqlService.query(guestSql, guestParams);
+            const foundEmail = await this.mysqlService.query(guestSql, guestParams);
+
             // 주문 작성 시 입력한 이메일이 회원 db에 존재하는 경우
             if (foundEmail[0].count !== 0) {
                throw new BadRequestException("이미 존재하는 이메일입니다.");
@@ -75,7 +89,7 @@ export class OrderService {
             const newAddress = `${postNumber} ${address} ${detailAddress}`;
             const number = this.generateRandomNumber();
             const orderSql = `INSERT INTO orders(number, email, name, address, phone_number, products, order_state) VALUES(?,?,?,?,?,?,?)`;
-            console.log(data.products);
+
             const orderParams = [number, email, name, newAddress, phoneNumber, ...data.products, orderState.COMPLETED];
             const registerGuestSql = "INSERT INTO VALUES(?,?,?,?,?)";
             const registerGuestParams = [number, email, name, hashPassword, phoneNumber];
