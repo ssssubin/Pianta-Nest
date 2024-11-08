@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { createUserDto } from "./dto/create-user.dto";
+import { createUserDto } from "../dto/create-user.dto";
 import { MySqlService } from "src/data/my-sql/my-sql.service";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
-import { signInUserDto } from "./dto/sign-in-user.dto";
-import { signInGuestDto } from "./dto/sign-in-guest.dto";
+import { signInUserDto } from "../dto/sign-in-user.dto";
+import { signInGuestDto } from "../dto/sign-in-guest.dto";
 import { Request, Response } from "express";
 
 @Injectable()

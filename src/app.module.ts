@@ -35,11 +35,12 @@ export class AppModule implements OnModuleInit, NestModule {
    async onModuleInit() {
       // 서버 시작 시 테이블 생성
       await Promise.all([
-         this.mysqlService.createUserTable(),
-         this.mysqlService.createGuestTable(),
-         this.mysqlService.createCategoryTable(),
-         this.mysqlService.createSubCategoryTable(),
-         this.mysqlService.createProducTable(),
+         this.mysqlService.createUserTable(), // 회원 테이블
+         this.mysqlService.createGuestTable(), // 비회원 테이블
+         this.mysqlService.createCategoryTable(), // 대분류 카테고리 테이블
+         this.mysqlService.createSubCategoryTable(), // 소분류 카테고리 테이블
+         this.mysqlService.createProducTable(), // 상품 테이블
+         this.mysqlService.createOrderTable(), // 주문 테이블
       ]);
    }
    configure(consumer: MiddlewareConsumer) {

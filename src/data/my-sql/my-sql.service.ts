@@ -81,6 +81,21 @@ export class MySqlService {
       await this.pool.execute(sql);
    }
 
+   // 주문 테이블 생성
+   async createOrderTable() {
+      const sql = `CREATE TABLE IF NOT EXISTS orders(
+         number VARCHAR(10) PRIMARY KEY,
+         email VARCHAR(255) NOT NULL,
+         name VARCHAR(255) NOT NULL,
+         date DATETIME NOT NULL DEFAULT (CONVERT_TZ(NOW(), '+00:00', '+09:00')),
+         address VARCHAR(255) NOT NULL,
+         phone_number VARCHAR(20) NOT NULL,
+         products JSON,
+         order_state VARCHAR(10) NOT NULL
+      )`;
+      await this.pool.execute(sql);
+   }
+
    // 회원 찾는 method
    async findUser(email: string) {
       const sql = `SELECT * FROM users WHERE email = '${email}';`;
