@@ -126,8 +126,13 @@ export class OrderService {
          }
 
          // 유저 쿠키 검증
-         await this.verifyToken(res, userCookies, process.env.USER_JWT_SECRET_KEY);
+         const decoded = await this.verifyToken(res, userCookies, process.env.USER_JWT_SECRET_KEY);
          const { email, name, postNumber, address, detailAddress, phoneNumber } = data.information;
+         // 로그인한 이메일과 주문 정보에 입력된 이메일이 다른 경우
+         if (decoded.email !== email) {
+            throw new BadRequestException("가입한 이메일로만 주문이 가능합니다.");
+         }
+
          const orderNumber = this.generateRandomNumber();
          const newAddress = `${postNumber} ${address} ${detailAddress}`;
          const userOrderSql = `INSERT INTO orders(number, email, name, address, phone_number, products, order_state) VALUES(?,?,?,?,?,?,?)`;
