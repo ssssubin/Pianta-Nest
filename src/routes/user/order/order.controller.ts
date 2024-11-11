@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Post, Req, Res } from "@nestjs/common";
 import { OrderService } from "./order.service";
 import {
    ApiBadRequestResponse,
@@ -8,8 +8,10 @@ import {
    ApiOperation,
    ApiTags,
 } from "@nestjs/swagger";
-import { createGuestOrderDto, createUserOrderDto, guestOrderDto } from "../dto/create-order.dto";
+import { createGuestOrderDto, createUserOrderDto } from "../dto/create-order.dto";
 import { Request, Response } from "express";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 
 @ApiTags("주문 API")
 @Controller("orders")
@@ -21,18 +23,16 @@ export class OrderController {
       description: "주문 정보",
       schema: {
          example: {
-            data: {
-               products: [{ name: "string", price: "string" }],
-               userInformation: {
-                  email: "string",
-                  name: "string",
-                  password: "string",
-                  confirmPassword: "string",
-                  postNumber: "string",
-                  address: "string",
-                  detailAddress: "string",
-                  phoneNumber: "string",
-               },
+            products: [{ name: "string", price: "string" }],
+            information: {
+               email: "string",
+               name: "string",
+               password: "string",
+               confirmPassword: "string",
+               postNumber: "string",
+               address: "string",
+               detailAddress: "string",
+               phoneNumber: "string",
             },
          },
       },
@@ -64,7 +64,22 @@ export class OrderController {
       @Body() data: createUserOrderDto | createGuestOrderDto,
    ) {
       const isUser = this.orderService.isCreatedGuestOrderDto(data.information);
+      let dtoInstance;
 
-      return await this.orderService.createOrder(res, req, data);
+      dtoInstance =
+         isUser === false ? plainToInstance(createUserOrderDto, data) : plainToInstance(createGuestOrderDto, data);
+
+      // dto 오류 발생 시
+      const errors = await validate(dtoInstance);
+      if (errors.length > 0) {
+         const targets = errors.map((target) => target.children);
+         throw new BadRequestException(targets[0].map((item) => item.children)[0].map((item) => item.constraints));
+      }
+
+      if (isUser === false) {
+         return await this.orderService.createUserOrder(res, req, data as createUserOrderDto);
+      } else {
+         return await this.orderService.createGuestOrder(res, req, data as createGuestOrderDto);
+      }
    }
 }
