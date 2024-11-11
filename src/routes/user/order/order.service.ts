@@ -1,10 +1,4 @@
-import {
-   BadRequestException,
-   ForbiddenException,
-   Injectable,
-   InternalServerErrorException,
-   UnauthorizedException,
-} from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { customAlphabet } from "nanoid";
 import { MySqlService } from "src/data/my-sql/my-sql.service";
 import { createGuestOrderDto, createUserOrderDto } from "../dto/create-order.dto";
@@ -12,15 +6,27 @@ import * as bcrypt from "bcrypt";
 import { orderState } from "./order-state";
 import { JwtService } from "@nestjs/jwt";
 import { Request, Response } from "express";
+import * as nodemailer from "nodemailer";
 
 @Injectable()
 export class OrderService {
    private readonly numbers = "123456789";
    private readonly nanoid = customAlphabet(this.numbers, 10);
+   private transport;
+
    constructor(
       private mysqlService: MySqlService,
       private jwtService: JwtService,
-   ) {}
+   ) {
+      this.transport = nodemailer.createTransport({
+         host: "smtp.gmail.com",
+         port: 587,
+         auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+         },
+      });
+   }
 
    // 주문번호 생성
    generateRandomNumber() {
@@ -29,13 +35,8 @@ export class OrderService {
 
    // 비회원 주문 dto인지 확인
    isCreatedGuestOrderDto(obj: any) {
-      if (obj.password === undefined) return;
-
-      const payload = {
-         password: obj.password,
-         confirmPassword: obj.confirmPassword,
-      };
-      return payload;
+      // 유저 정보에 비밀번호 없으면 회원
+      return obj.password === undefined ? false : true;
    }
 
    // 토큰 확인
@@ -56,8 +57,67 @@ export class OrderService {
       }
    }
 
-   // 주문 생성 api
-   async createOrder(res: Response, req: Request, data: createUserOrderDto | createGuestOrderDto) {
+   // 주문 생성 api(비회원)
+   async createGuestOrder(res: Response, req: Request, data: createGuestOrderDto) {
+      try {
+         const { adminCookies } = req.cookies;
+         // 관리자인 경우
+         if (adminCookies) {
+            throw new ForbiddenException("접근 권한이 없습니다.");
+         }
+
+         const { email, name, postNumber, address, detailAddress, phoneNumber, password, confirmPassword } =
+            data.information;
+         const guestSql = `SELECT COUNT(*) as count FROM users WHERE email = ?`;
+         const guestParams = [email];
+         const foundEmail = await this.mysqlService.query(guestSql, guestParams);
+
+         // 주문 작성 시 입력한 이메일이 회원 db에 존재하는 경우
+         if (foundEmail[0].count !== 0) {
+            throw new BadRequestException("이미 가입된 회원입니다. 로그인 후 사용해주세요.");
+         }
+
+         // 비밀번호 불일치 판단
+         if (password !== confirmPassword) {
+            throw new BadRequestException("비밀번호가 일치하지 않습니다.");
+         }
+
+         const hashPassword = await bcrypt.hash(password, 10);
+         const newAddress = `${postNumber} ${address} ${detailAddress}`;
+         const number = this.generateRandomNumber();
+         const orderSql = `INSERT INTO orders(number, email, name, address, phone_number, products, order_state) VALUES(?,?,?,?,?,?,?)`;
+
+         const orderParams = [number, email, name, newAddress, phoneNumber, ...data.products, orderState.COMPLETED];
+         const registerGuestSql = "INSERT INTO guests VALUES(?,?,?,?,?)";
+         const registerGuestParams = [number, email, name, hashPassword, phoneNumber];
+
+         // 주문서 db 저장 및 비회원 db 등록
+         await Promise.all([
+            this.mysqlService.query(orderSql, orderParams),
+            this.mysqlService.query(registerGuestSql, registerGuestParams),
+         ]);
+
+         await this.transport.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: `[Pianta] ${name}님에게 보내는 주문번호`,
+            text: `회원님의 주문번호는 ${number}입니다.`,
+         });
+
+         const guestToken = await this.jwtService.signAsync(
+            { email, phoneNumber },
+            { secret: process.env.GUEST_JWT_SECRET_KEY },
+         );
+
+         res.cookie("guestCookies", guestToken, { httpOnly: true });
+         return { err: null, data: { orderNumber: number, message: "주문 완료되었습니다." } };
+      } catch (e) {
+         throw e;
+      }
+   }
+
+   // 주문 생성 api(회원)
+   async createUserOrder(res: Response, req: Request, data: createUserOrderDto) {
       try {
          const { userCookies, adminCookies } = req.cookies;
          // 관리자인 경우
@@ -65,55 +125,24 @@ export class OrderService {
             throw new ForbiddenException("접근 권한이 없습니다.");
          }
 
-         const payload = this.isCreatedGuestOrderDto(data.information);
+         // 유저 쿠키 검증
+         await this.verifyToken(res, userCookies, process.env.USER_JWT_SECRET_KEY);
+         const { email, name, postNumber, address, detailAddress, phoneNumber } = data.information;
+         const orderNumber = this.generateRandomNumber();
+         const newAddress = `${postNumber} ${address} ${detailAddress}`;
+         const userOrderSql = `INSERT INTO orders(number, email, name, address, phone_number, products, order_state) VALUES(?,?,?,?,?,?,?)`;
+         const userOrderParams = [
+            orderNumber,
+            email,
+            name,
+            newAddress,
+            phoneNumber,
+            data.products,
+            orderState.COMPLETED,
+         ];
+         await this.mysqlService.query(userOrderSql, userOrderParams);
 
-         // 비회원 정보일 경우
-         if (payload !== undefined) {
-            const { email, name, postNumber, address, detailAddress, phoneNumber } = data.information;
-            const { password, confirmPassword } = payload;
-            const guestSql = `SELECT COUNT(*) as count FROM guests WHERE email = ?`;
-            const guestParams = [email];
-            const foundEmail = await this.mysqlService.query(guestSql, guestParams);
-
-            // 주문 작성 시 입력한 이메일이 회원 db에 존재하는 경우
-            if (foundEmail[0].count !== 0) {
-               throw new BadRequestException("이미 존재하는 이메일입니다.");
-            }
-
-            // 비밀번호 불일치 판단
-            if (password !== confirmPassword) {
-               throw new BadRequestException("비밀번호가 일치하지 않습니다.");
-            }
-
-            const hashPassword = await bcrypt.hash(password, 10);
-            const newAddress = `${postNumber} ${address} ${detailAddress}`;
-            const number = this.generateRandomNumber();
-            const orderSql = `INSERT INTO orders(number, email, name, address, phone_number, products, order_state) VALUES(?,?,?,?,?,?,?)`;
-
-            const orderParams = [number, email, name, newAddress, phoneNumber, ...data.products, orderState.COMPLETED];
-            const registerGuestSql = "INSERT INTO VALUES(?,?,?,?,?)";
-            const registerGuestParams = [number, email, name, hashPassword, phoneNumber];
-
-            const err = await Promise.all([
-               this.mysqlService.query(orderSql, orderParams),
-               this.mysqlService.query(registerGuestSql, registerGuestParams),
-            ]);
-
-            // 주문 생성 및 비회원 생성 과정에서 오류가 발생했을 경우
-            if (err.every((err) => err === undefined) === false) {
-               throw new InternalServerErrorException(
-                  "데이터를 등록하는 과정에서 오류가 발생했습니다. 잠시 후 다시 이용해주세요.",
-               );
-            }
-
-            const guestToken = await this.jwtService.signAsync(
-               { email, phoneNumber },
-               { secret: process.env.GUEST_JWT_SECRET_KEY },
-            );
-
-            res.cookie("guestCookies", guestToken, { httpOnly: true });
-            return { err: null, data: { orderNumber: number, message: "주문 완료되었습니다." } };
-         }
+         return { err: null, data: { orderNumber, message: "주문 완료되었습니다." } };
       } catch (e) {
          throw e;
       }
