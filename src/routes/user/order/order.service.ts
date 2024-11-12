@@ -87,7 +87,7 @@ export class OrderService {
          const number = this.generateRandomNumber();
          const orderSql = `INSERT INTO orders(number, email, name, address, phone_number, products, order_state) VALUES(?,?,?,?,?,?,?)`;
 
-         const orderParams = [number, email, name, newAddress, phoneNumber, ...data.products, orderState.COMPLETED];
+         const orderParams = [number, email, name, newAddress, phoneNumber, data.products, orderState.COMPLETED];
          const registerGuestSql = "INSERT INTO guests VALUES(?,?,?,?,?)";
          const registerGuestParams = [number, email, name, hashPassword, phoneNumber];
 
@@ -148,6 +148,32 @@ export class OrderService {
          await this.mysqlService.query(userOrderSql, userOrderParams);
 
          return { err: null, data: { orderNumber, message: "주문 완료되었습니다." } };
+      } catch (e) {
+         throw e;
+      }
+   }
+
+   // 주문 조회
+   async getOrders(res: Response, req: Request) {
+      try {
+         const { guestCookies, userCookies, adminCookies } = req.cookies;
+         // 관리자인 경우
+         if (adminCookies) {
+            throw new ForbiddenException("접근 권한이 없습니다.");
+         }
+
+         const decoded = guestCookies
+            ? await this.verifyToken(res, guestCookies, process.env.GUEST_JWT_SECRET_KEY)
+            : await this.verifyToken(res, userCookies, process.env.USER_JWT_SECRET_KEY);
+
+         const orderSql = `SELECT * FROM orders WHERE email = ?`;
+         const orderParams = [decoded.email];
+         const foundOrder = await this.mysqlService.query(orderSql, orderParams);
+         if (foundOrder[0] === undefined) {
+            return { err: null, data: { message: "주문 내역이 존재하지 않습니다." } };
+         }
+
+         return { err: null, data: foundOrder };
       } catch (e) {
          throw e;
       }

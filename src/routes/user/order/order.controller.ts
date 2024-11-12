@@ -1,14 +1,16 @@
-import { BadRequestException, Body, Controller, Post, Req, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { OrderService } from "./order.service";
 import {
    ApiBadRequestResponse,
    ApiBody,
    ApiCreatedResponse,
    ApiInternalServerErrorResponse,
+   ApiOkResponse,
    ApiOperation,
    ApiTags,
+   ApiUnauthorizedResponse,
 } from "@nestjs/swagger";
-import { createGuestOrderDto, createUserOrderDto } from "../dto/create-order.dto";
+import { createGuestOrderDto, createUserOrderDto, guestOrderDto } from "../dto/create-order.dto";
 import { Request, Response } from "express";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
@@ -23,7 +25,7 @@ export class OrderController {
       description: "주문 정보",
       schema: {
          example: {
-            products: [{ name: "string", price: "string" }],
+            products: [{ name: "string", price: 0 }],
             information: {
                email: "string",
                name: "string",
@@ -81,5 +83,26 @@ export class OrderController {
       } else {
          return await this.orderService.createGuestOrder(res, req, data as createGuestOrderDto);
       }
+   }
+
+   @Get()
+   @ApiOperation({ summary: "주문 조회 API" })
+   @ApiOkResponse({
+      description: "주문 조회",
+      example: {
+         err: null,
+         data: { number: 1234567891, date: "2023-02-14", products: [{ productName: "상품1", productPrice: 2000 }] },
+      },
+   })
+   @ApiUnauthorizedResponse({
+      description: "UnAuthorized",
+      example: { err: "인증되지 않은 사용자입니다.", data: null },
+   })
+   @ApiInternalServerErrorResponse({
+      description: "Internal Server Error",
+      example: { err: "서버 오류입니다. 잠시 후 다시 이용해주세요.", data: null },
+   })
+   async getOrders(@Res({ passthrough: true }) res: Response, @Req() req: Request) {
+      return await this.orderService.getOrders(res, req);
    }
 }
